@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- <script>
+        const p = new Promise((resolve, reject) => {
+            reject('123');
+        });
+        p.then(res => {
+            // throw Error('123error');
+        }, (err) => {
+            console.log('err', err);
+            return '456';
+        }).then(res => {
+            console.log('res', res);
+        }).catch(err => {
+            console.log('err catch', err);
+            // return err;
+        });
+    </script> -->
+    <!-- <script>
+        function interview (callback) {
+            setTimeout(() => {
+                if (Math.random() < 0.5) {
+                    callback('smile');
+                } else {
+                    throw new Error('fail');
+                }
+            }, 500);
+        }
+
+        try {
+            interview((res) => {
+                console.log('res', res);
+            });
+        } catch(err) {
+            console.log('err', err);
+        }
+    </script> -->
+    <a id="targetLink" href="https://www.baidu.com">link</a>
+    <div id="test">test</div>
+    <!-- <script src="./dp.js"></script> -->
+    <!-- <script src="./test.js"></script> -->
+    <!-- <script src="./es6.js"></script> -->
+    <!-- <script src="./redux-source.js"></script> -->
+</body>
+<script>
+    function click(node) {
+        // node.click();
+        // try {
+        //     console.log(1);
+        //     node.dispatchEvent(new MouseEvent('click'))
+        // } catch (e) {
+        //     consoel.log(2);
+        //     var evt = document.createEvent('MouseEvents')
+        //     evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80,
+        //         20, false, false, false, false, 0, null)
+        //     node.dispatchEvent(evt)
+        // }
+    }
+    setTimeout(() => {
+        const target = document.querySelector('#targetLink');
+        click(target);
+    }, 3e3);
+</script>
+</html>

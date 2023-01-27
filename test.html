@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>test html</div>
+    <button id="btn">click</button>
+</body>
+<script>
+    const btn = document.getElementById('btn');
+    btn.addEventListener('click', () => {
+    Promise.resolve().then(() => console.log('1a'));
+    console.log('1b');
+    });
+    btn.addEventListener('click', () => {
+    Promise.resolve().then(() => console.log('2a'));
+    console.log('2b');
+    });
+    btn.click();
+</script>
+</html>

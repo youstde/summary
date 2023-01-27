@@ -1,0 +1,180 @@
+### 为什么要引入https
+因为http是明文传输的，那在从客户端到服务端整个传输链路中的任何一个环节都有可能被劫持，然后进行窃取、伪造、篡改。这就是所谓的*中间人攻击*
+
+https是在 `http层` 和 `tcp层` 中间加入了 `安全层(SSL/TLS)`
+
+安全层的主要职责：
+1. 对发起的 http 请求的数据进行加密
+2. 对接收到的 http 的内容进行解密
+
+### https 使用了非对称和对称加密混合加密的方法了，为什么还需要 CA证书
+如果没有数字证书，客户端是无法确认当前收到的公钥是不是服务端的，也就是说，依然会存在中间人攻击，中间人只需要劫持客户端和服务的请求，然后把公钥替换成自己的，那就可以在中间为所欲为
+
+CA证书的出现是为了证明`我是我`
+客户端在与服务端建立安全连接的时候，服务端会发送给客户端一个数字证书，证书中包含了公钥和数字签名。（中间会有验证公钥的环节）客户端收到后会用摘要算法去对数字证书的内容进行计算，从而得到信息摘要A，然后用公钥解密出数字签名的内容，得到信息摘要B，如果 A 和 b一致，则确认证书合法的
+
+### JWT 或者 authentication cookie 到底存在哪里才安全
+1. cookie 存储
+    httpOnly cookie 禁止脚本获取cookie
+    secure cookie 只允许该cookie 通过 https传输
+    sameSite cookie 防止CSRF 的一种方式
+
+2. JWT 【header，payload，signature】
+    将 signature 单独抽出来，然后通过 session cookie 进行存储和传输，同时设置上 `httponly`, `samesite`, `secure`，从而保证 signature 不被窃取
+    然后 payload 设置为永久的 cookie，这样我既可以拿到 payload 里面的信息为自己所用，有可以防止 xss 和 csrf
+
+### XSS 是什么，怎么预防
+> 跨站脚本攻击
+设置httponly
+CSP content-security-policy
+CSP 的实质就是白名单制度
+[美团-如何防止XSS攻击](https://tech.meituan.com/2018/09/27/fe-security.html)
+
+### CSRF 是什么，怎么防止 CSRF 攻击
+> Cookie 一般用来存储用户的身份信息，恶意网站可以设法伪造带有正确 Cookie 的 Http 请求， 这就是 CSRF 攻击。
+samesite
+1. none 没有要求
+2. strict 最严格，不准跳转
+3. lax 跳转会带上
+www.test1.com ====> www.test2.com 
+none: 不关心
+lax: 那从test1 跳转到 test2 的时候会带上 test2 的cookie
+strict: 访问相同站点的时候会带上cookie
+
+防范：
+1. 设置samesite：strict
+2. 二次确认
+3. 保证cookie只在会话期内有效(session cookie)
+
+[美团-如何防止CSRF攻击](https://tech.meituan.com/2018/10/11/fe-security-csrf.html)
+
+### CDN（content-delivery-network）系统有哪些组成部分
+1. 基于缓存设备
+    a. 把缓存在本地的内容快速的提供给用户
+    b. 源站点进行准实时的内容同步（可以是源站点的主动推送，也可以是手动刷CDN）
+2. 负载均衡系统
+    a. 全局负载均衡
+        根据就近原则，给用户分配最佳的服务节点
+    b. 本地负载均衡
+        节点内部设备集群的负债均衡
+3. 运营管理系统
+    支持服务于整个网络平台
+
+### 在何种业务场景的项目中需要使用到 CDN， CDN 的工作方式和项目的关系
+
+### 简单说说 CDN 的流程
+CDN 主要做的事情：
+1. 性能
+2. 安全
+第一步： DNS 域名解析过程
+www.mytest.com => 浏览器缓存 => 操作系统缓存（host文件）=> 路由器缓存 => ISP的DNS服务器 => 根域名服务器
+
+第二步：CDN
+浏览器通过DNS解析域名获取到对应的IP地址
+1. 用户没有使用CDN服务
+    浏览器会根据IP地址向域名服务器发起请求，然后服务器返回数据 => 直连
+2. 用户使用了CDN服务
+    DNS解析 => CDN专用的DNS服务器 => CDN的全局负载均衡设备的IP地址返回给用户
+    用户向CDN全局负载均衡设备发出请求，发出请求后，全局负载均衡设备会找到用户所属区域内的负载均衡设备，然后选择合适的空闲的服务器进行提供服务
+
+### JS 和 CSS 都有可能阻塞DOM树的解析
+当从服务器接收到html第一批数据时，DOM解析就开始了（DOM解析器），在解析过程中，如果遇到了 JS脚本，如下所示：
+```html
+<html>
+    <body>
+        test
+        <script>
+        document.write("--foo")
+        </script>
+    </body>
+</html>
+```
+会先暂停DOM树的解析，执行这段脚本，执行完成后再继续往下解析。
+
+第二种情况：
+把内联的脚步替换成外部 JS文件，如下：
+```html
+<html>
+    <body>
+        test
+        <script type="text/javascript" src="foo.js"></script>
+    </body>
+</html>
+```
+这种情况下，当解析到JavaScript的时候，会先暂停DOM解析，下载 js文件，下载完成后执行该 js文件，然后再继续向下解析DOM，`所以这就是为什么 JS 会阻塞 DOM树的解析渲染`
+
+第三种情况：
+```html
+<html>
+    <head>
+        <style type="text/css" src = "theme.css" />
+    </head>
+    <body>
+        <p>test</p>
+        <script>
+            let e = document.getElementsByTagName('p')[0]
+            e.style.color = 'blue'
+        </script>
+    </body>
+</html>
+```
+当在JavaScript中访问了某个元素的样式，那就需要等这个元素的样式下载完成后才能往下继续执行，`所以在这种情况下，CSS 也会阻塞 DOM 的解析`
+
+### HTTP3新特性
+[说一下 HTTP/3 新特性，为什么选择使用 UDP 协议？ #100](https://github.com/sisterAn/blog/issues/100)
+引入了QUIC协议，基于UDP
+QUIC虽然是基于 UDP，但是在原本的基础上新增了很多功能，比如多路复用、0RTT、TLS加密、流量控制、有序交付等等
+1. **多路复用、解决队头阻塞问题**
+a. QUIC基于 UDP，而 UDP 本身就支持多路复用，多个数据流之间互不影响，所以也就不会存在队头阻塞的问题
+b. QUIC 在移动端的表现会比 TCP 好。因为 TCP 是基于 IP 和端口去识别连接的，这种方式在多变的移动端网络环境下是很脆弱的，一旦网络连接发生改变，就需要重新建联。但是 QUIC 是通过 ID 的方式去识别一个连接，不管你网络环境如何变化，只要 ID 不变，就能迅速重连上。
+2. **向前纠错机制**
+每个包在包含其自身的内容之外，还包括了部分其他数据包的数据，因此在少量丢包的情况下可以通过其他包的冗余数据直接组装而无需重传。但是如果丢失了很多包还是需要重传的。
+
+### 缓存
+#### 强制缓存
+1. expires 绝对事件，是一个时间戳，取决于客户端的时间，如果修改客户端时间就会出现问题
+2. cache-control 相对时间
+    a. public 什么都不设置，默认是public
+    b. no-cache 禁止使用强制缓存，使用协商缓存
+    c. max-age 强制缓存
+    d. no-store 任何时候都不使用强制缓存和协商缓存
+优先级：
+cache-control 的优先级大于 expires
+
+#### 协商缓存
+当强制缓存失效后，就需要使用协商缓存
+**last-modified 时间戳**
+过程：
+1. 服务端返回响应头信息：last-modified: Sat, 30 Mar 2029 05:46:11 GMT
+2. 浏览器会记录数据，缓存到浏览器中
+3. 等下次请求的时候，浏览器会在请求头中带上`if-modified-since(last-modified)`传给服务端
+4. 服务端会去对比`if-modified-since`和`last-modified`，从而返回 304/200(服务端返回更新后的数据)
+缺点：
+last-modified是以second为单位的，粒度比较大，如果一秒内该文件有多次修改就没办法去准确表示了，这个时候就需要Etag
+
+**Etag**
+根据文件内容，生成唯一值
+缺点：
+每次去请求的时候，都会读取文件，确定文件有没有修改
+
+### 原始数据类型如何具有属性操作的
+```js
+let a = 'hello';
+a.length // 5
+
+// js在收集阶段
+Object(a) String { 'hello' }
+
+// 如何去除包装
+let b = Object(a);
+let c = b.valueOf(); // 'hello'
+```
+任何东西经过包装都会变成对象
+```js
+const a = new Boolean(false);
+if (!a) {
+	console.log('hellow world');
+}
+
+// never print
+```
