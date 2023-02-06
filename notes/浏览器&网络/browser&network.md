@@ -1,5 +1,8 @@
 ### 为什么要引入https
-因为http是明文传输的，那在从客户端到服务端整个传输链路中的任何一个环节都有可能被劫持，然后进行窃取、伪造、篡改。这就是所谓的*中间人攻击*
+1. 数据的保密性
+2. 数据的安全性
+3. 数据的完整性
+总的来说：因为http是明文传输的，那在从客户端到服务端整个传输链路中的任何一个环节都有可能被劫持，然后进行窃取、伪造、篡改。这就是所谓的*中间人攻击*
 
 https是在 `http层` 和 `tcp层` 中间加入了 `安全层(SSL/TLS)`
 
@@ -21,7 +24,7 @@ CA证书的出现是为了证明`我是我`
 
 2. JWT 【header，payload，signature】
     将 signature 单独抽出来，然后通过 session cookie 进行存储和传输，同时设置上 `httponly`, `samesite`, `secure`，从而保证 signature 不被窃取
-    然后 payload 设置为永久的 cookie，这样我既可以拿到 payload 里面的信息为自己所用，有可以防止 xss 和 csrf
+    然后 payload 设置为永久的 cookie，这样我既可以拿到 payload 里面的信息为自己所用，又可以防止 xss 和 csrf
 
 ### XSS 是什么，怎么预防
 > 跨站脚本攻击
@@ -178,3 +181,4 @@ if (!a) {
 
 // never print
 ```
+

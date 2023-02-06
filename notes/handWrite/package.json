@@ -1,0 +1,15 @@
+{
+  "name": "handwrite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "arrayFlat.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^29.4.1"
+  }
+}

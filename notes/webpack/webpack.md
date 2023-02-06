@@ -115,12 +115,12 @@ gulp 是串在一起的，需要我们自己去编排顺序。更适合作为自
 ### 性能优化
 1. 自我救赎 - webpack 本身也在一直在做优化
 a. mode 为 production 的时候默认开启 scope hosting 和 tree shaking
-scope hosting 会分析出模块之间的依赖，从而尽可能的把打包出的模块合并到一个函数里去。
+`scope hosting 会分析出模块之间的依赖，从而尽可能的把打包出的模块合并到一个函数里去。`
 
 b. 默认内置模块
-老版本：
+*老版本：*
 file-loader、url-loader、raw-loader
-V5版本：
+*V5版本：*
 内置了这些能力
 asset/resource ==> file-loader
 asset/inline ====> url-loader
@@ -131,6 +131,22 @@ c. 持久化缓存 - 阶段性编译的结果存放在持久化缓存中
 module.exports = {
     cache: {
         type: 'fileSystem'
+    }
+}
+```
+
+2. webpack5配置缓存
+*webpack5 之前*
+* 使用 cache-loader 将编译结果写入磁盘
+* 还有一部分 loader 自带缓存配置，比如 babel-loader 可以设置缓存
+*webpack5*
+可以直接通过配置 cache 去设置缓存
+```js
+// webpack.config.js
+module.exports = {
+    cache: {
+        type: 'filesystem', // 'memory' | 'filesystem'
+        // cacheDirectory: 默认是 'node_modules/.cache/webpack',
     }
 }
 ```

@@ -1,21 +1,3 @@
-// 手写instanceof
-function selfInstanceof(left, right) {
-    const proto = Object.getPrototypeOf(left);
-    const prototype = right.prototype;
-    while(true) {
-        if (!proto) return false;
-        if (proto === prototype) return true;
-        proto = Object.getPrototypeOf(proto);
-    }
-}
-
-// 手写Object.create
-function objectCreate(obj) {
-    function Fn() {};
-    Fn.prototype = obj;
-    return new Fn();
-}
-
 // 定义状态常量
 const STATE = {
     PENDING: 'pending',
@@ -110,7 +92,9 @@ function MyPromise(fn) {
         return this.then(null, catchCb);
     }
 
-    this.finally = function (cb) {
+    this.finally = function(cb) {
+        const p = this.constructor;
+        console.log('p', p);
         return this.then(cb, cb);
     }
 
@@ -121,56 +105,68 @@ function MyPromise(fn) {
     }
 }
 
-// const p = new MyPromise((resolve, reject) => {
-//     resolve('123');
+// 测试用例
+const p = new MyPromise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(123);
+    }, 300);
+});
+
+p.then(res => {
+    return new MyPromise((resolve, reject) => {
+        setTimeout(() => {
+            reject(`${res}-456`);
+        }, 200);
+    })
+})
+.then(res => {
+    console.log('res2', res);
+})
+.catch((err) => {
+    return new MyPromise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(err);
+        });
+    })
+})
+.then(res => {
+    console.log('res3', res);
+    return res;
+})
+.finally((res) => {
+    setTimeout(() => {
+        console.log('finally', res);
+        return res;
+    }, 1e3);
+})
+.then(res => {
+    console.log('afterFinally', res);
+})
+
+
+// 对照
+// const p2 = new Promise((resolve, reject) => {
+//     setTimeout(() => {
+//         resolve(123);
+//     }, 300);
 // });
-// p.then((id) => {
-//     return new MyPromise((resolve, reject) => {
-//         resolve(`${id},jack`);
+// p2.then(res => {
+//     return new Promise((resolve, reject) => {
+//         setTimeout(() => {
+//             resolve(`${res}-456`);
+//         }, 200);
 //     });
 // })
 // .then(res => {
 //     console.log(res);
+//     return res;
+// })
+// .then(res => {
+//     console.log(res);
+// })
+// .catch(err => {
+//     console.log('err====>', err);
+// })
+// .finally((res) => {
+//     console.log('finally', res);
 // });
-// p.then(() => {
-//     return new MyPromise((resolve, reject) => {
-//         // to do something
-//         resolve('186****5836');
-//     })
-// })
-// .then((res) => {
-//     // 这个then方法其实是上个then（也就是userId promise）返回的bridge promise
-//     // bridge promise是为了让整个链路串行下去，所以bridge promise要在后面fulfilled
-//     // 这个时候打印出来的res是'186****5836'
-// })
-
-p.then(res => {
-
-}).catch(err => {
-
-});
-
-// 等同于
-p.then(res => {
-
-}).then(null, err => {
-
-});
-
-
-// 'use strict';
-
-// var Promise = require('./core.js');
-
-// module.exports = Promise;
-// Promise.prototype.finally = function (f) {
-//   return this.then(function (value) {
-//     return Promise.resolve(f()).then(function () {
-//       return value;
-//     });
-//   }, function (err) {
-//     return Promise.resolve(f()).then(function () {
-//       throw err;
-//     });
-//   });
-// };
