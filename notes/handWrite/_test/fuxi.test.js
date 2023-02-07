@@ -123,3 +123,55 @@ describe('扁平数组和树状结构', () => {
         expect(res).toEqual(data);
     });
 });
+
+// call/apply/bind
+describe('call/apply/bind', () => {
+    const person = {
+        name: 'youstde',
+        getName(newName, age) {
+            if (!newName) return this.name;
+            return {
+                name: newName,
+                age,
+            };
+        }
+    }
+    const personTwo = {
+        name: 'alex'
+    }
+    test('call with no params', () => {
+        
+        const name = person.getName.myCall(personTwo);
+        expect(name).toBe('alex');
+    });
+
+    test('call with params', () => {
+        const personInfo = person.getName.myCall(personTwo, 'jack', 18);
+        expect(personInfo).toEqual({
+            name: 'jack',
+            age: 18,
+        });
+    });
+
+    test('apply with no params', () => {
+        const name = person.getName.myApply(personTwo);
+        expect(name).toBe('alex');
+    });
+
+    test('apply with params', () => {
+        const name = person.getName.myApply(personTwo, ['jack', 18]);
+        expect(name).toEqual({
+            name: 'jack',
+            age: 18,
+        });
+    });
+
+    test('bind with params', () => {
+        const newFn = person.getName.bind(personTwo, 'jack');
+        const res = newFn(18);
+        expect(res).toEqual({
+            name: 'jack',
+            age: 18,
+        });
+    });
+});

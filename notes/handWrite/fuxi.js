@@ -121,6 +121,36 @@ function traverse(root) {
 }
 
 
+// call
+Function.prototype.myCall = function(context, ...args) {
+    const curContext = context || window;
+    const fn = Symbol(curContext);
+    context[fn] = this;
+
+    const res = context[fn](...args);
+    delete context[fn];
+    return res;
+}
+
+
+// apply
+Function.prototype.myApply = function(context, args=[]) {
+    const curContext = context || window;
+    const fn = Symbol(curContext);
+    context[fn] = this;
+    const res = context[fn](...args);
+    delete context[fn];
+    return res;
+}
+
+// bind
+Function.prototype.myBind = function(context, ...args) {
+    return (...otherArgs) => {
+        return this.apply(context, args.concat(otherArgs));
+    }
+}
+
+
 
 module.exports = {
     objectCreate,
