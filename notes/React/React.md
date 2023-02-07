@@ -125,8 +125,8 @@ ReactDOM.createRoot：异步执行（看情况的，也有可能是同步执行�
 #### 总结
 因为16的合成事件执行时机，导致了如果我去阻止冒泡是阻止不了原生事件的冒泡事件的
 下面是相应的解释：
-![](./assets/syntheticEvent1.image)
-![](./assets/syntheticEvent2.image)
+![](./syntheticEvent1.png)
+![](./syntheticEvent2.png)
 
 ### react18取消了Effect list，取而代之的是遍历整个fiber树
 在18版本之前，beginWork阶段是自顶向下深度优先遍历的，然后如果遇到叶子节点就会触发当前节点的completeWork，那completeWork自下向上回到跟节点，那既然回都回去了，不如把effect收集一下，从而让commit阶段坐享其成，直接拿completeWork阶段的成功用。然后就有了completeWork的EffectList

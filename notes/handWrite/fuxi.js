@@ -75,6 +75,52 @@ class EventEmmiter {
     }
 }
 
+// 扁平数组转树形结构
+function arrToTree(arr) {
+    const res = [];
+    const map = {};
+    for(let item of arr) {
+        const id = item.id;
+        const pid = item.pid;
+        map[id] = map[id] ? {...item, ...map[id] } : {...item}; 
+        if (pid === 'root') {
+            res.push(map[id]);
+        } else {
+            if (!map[pid]) {
+                map[pid] = {
+                    children: [],
+                }
+            } else if (!map[pid].children) {
+                map[pid].children = [];
+            }
+            map[pid].children.push(map[id]);
+        }
+    }
+    return res;
+}
+
+// 树状结构转扁平数组
+function treeToArray(tree) {
+    const res = [];
+    for(let itemRoot of tree) {
+        const draft = traverse(itemRoot);
+        res.push(...draft);
+    }
+    return res;
+}
+
+function traverse(root) {
+    const res = [{ id: root.id, pid: root.pid }];
+    if (!root.children) return res;
+
+    root.children.forEach(itemRoot => {
+        const draft = traverse(itemRoot);
+        res.push(...draft);
+    });
+    return res;
+}
+
+
 
 module.exports = {
     objectCreate,
@@ -82,4 +128,6 @@ module.exports = {
     myNew,
     myNewTwo,
     EventEmmiter,
+    arrToTree,
+    treeToArray,
 }

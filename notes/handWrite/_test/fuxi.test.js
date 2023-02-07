@@ -1,5 +1,5 @@
 const fuxi = require('../fuxi.js');
-const { objectCreate, myInstance, EventEmmiter, myNew, myNewTwo } = fuxi;
+const { objectCreate, myInstance, EventEmmiter, myNew, myNewTwo, arrToTree, treeToArray } = fuxi;
 
 // objectCreate
 describe('objectCreate', () => {
@@ -20,7 +20,7 @@ describe('objectCreate', () => {
 
 
 describe('myInstance check Array', () => {
-    var arr = [1,2,3];
+    var arr = [1, 2, 3];
     test('arr instanceof Array', () => {
         expect(myInstance(arr, Array)).toBe(true);
     });
@@ -30,7 +30,7 @@ describe('myInstance check Array', () => {
 });
 
 describe('myInstance check Object', () => {
-    var obj = {a: 1, b: 2};
+    var obj = { a: 1, b: 2 };
     test('obj instanceof Object', () => {
         expect(myInstance(obj, Object)).toBe(true);
     });
@@ -75,8 +75,51 @@ describe('eventEmmiter', () => {
         em.dispatchEvent('onceClick', params);
         try {
             em.dispatchEvent('onceClick', params);
-        } catch(err) {
+        } catch (err) {
             expect(err).toEqual(new Error('该事件未注册'));
         }
+    });
+});
+
+// 扁平数组转树形结构
+describe('扁平数组和树状结构', () => {
+    const data = [
+        { id: 'node-1', pid: 'root' },
+        { id: 'node-2', pid: 'root' },
+        { id: 'node-3', pid: 'node-2' },
+        { id: 'node-4', pid: 'node-2' },
+        { id: 'node-5', pid: 'node-4' },
+    ];
+    const tree = [
+        {
+            "id":"node-1",
+            "pid":"root"
+        },
+        {
+            "id":"node-2",
+            "pid":"root",
+            "children":[
+                {"id":"node-3","pid":"node-2"},
+                {
+                    "id":"node-4",
+                    "pid":"node-2",
+                    "children":[
+                        {
+                            "id":"node-5",
+                            "pid":"node-4"
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+    test('array to tree', () => {
+        const res = arrToTree(data);
+        expect(res).toEqual(tree);
+    });
+
+    test('tree to array', () => {
+        const res = treeToArray(tree);
+        expect(res).toEqual(data);
     });
 });
