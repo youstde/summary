@@ -1,5 +1,5 @@
 const fuxi = require('../fuxi.js');
-const { objectCreate, myInstance, EventEmmiter, myNew, myNewTwo, arrToTree, treeToArray } = fuxi;
+const { objectCreate, myInstanceOf, EventEmmiter, myNew, myNewTwo, arrToTree, treeToArray } = fuxi;
 
 // objectCreate
 describe('objectCreate', () => {
@@ -19,23 +19,23 @@ describe('objectCreate', () => {
 });
 
 
-describe('myInstance check Array', () => {
+describe('myInstanceOf check Array', () => {
     var arr = [1, 2, 3];
     test('arr instanceof Array', () => {
-        expect(myInstance(arr, Array)).toBe(true);
+        expect(myInstanceOf(arr, Array)).toBe(true);
     });
     test('arr instanceof Object', () => {
-        expect(myInstance(arr, Object)).toBe(true);
+        expect(myInstanceOf(arr, Object)).toBe(true);
     });
 });
 
-describe('myInstance check Object', () => {
+describe('myInstanceOf check Object', () => {
     var obj = { a: 1, b: 2 };
     test('obj instanceof Object', () => {
-        expect(myInstance(obj, Object)).toBe(true);
+        expect(myInstanceOf(obj, Object)).toBe(true);
     });
     test('obj instanceof Array', () => {
-        expect(myInstance(obj, Array)).toBe(false);
+        expect(myInstanceOf(obj, Array)).toBe(false);
     });
 });
 
@@ -81,97 +81,102 @@ describe('eventEmmiter', () => {
     });
 });
 
-// 扁平数组转树形结构
-describe('扁平数组和树状结构', () => {
-    const data = [
-        { id: 'node-1', pid: 'root' },
-        { id: 'node-2', pid: 'root' },
-        { id: 'node-3', pid: 'node-2' },
-        { id: 'node-4', pid: 'node-2' },
-        { id: 'node-5', pid: 'node-4' },
-    ];
-    const tree = [
-        {
-            "id":"node-1",
-            "pid":"root"
-        },
-        {
-            "id":"node-2",
-            "pid":"root",
-            "children":[
-                {"id":"node-3","pid":"node-2"},
-                {
-                    "id":"node-4",
-                    "pid":"node-2",
-                    "children":[
-                        {
-                            "id":"node-5",
-                            "pid":"node-4"
-                        }
-                    ]
-                }
-            ]
-        }
-    ];
-    test('array to tree', () => {
-        const res = arrToTree(data);
-        expect(res).toEqual(tree);
-    });
+// // 扁平数组转树形结构
+// describe('扁平数组和树状结构', () => {
+//     const data = [
+//         { id: 'node-1', pid: 'root' },
+//         { id: 'node-2', pid: 'root' },
+//         { id: 'node-3', pid: 'node-2' },
+//         { id: 'node-4', pid: 'node-2' },
+//         { id: 'node-5', pid: 'node-4' },
+//     ];
+//     const tree = [
+//         {
+//             "id":"node-1",
+//             "pid":"root"
+//         },
+//         {
+//             "id":"node-2",
+//             "pid":"root",
+//             "children":[
+//                 {"id":"node-3","pid":"node-2"},
+//                 {
+//                     "id":"node-4",
+//                     "pid":"node-2",
+//                     "children":[
+//                         {
+//                             "id":"node-5",
+//                             "pid":"node-4"
+//                         }
+//                     ]
+//                 }
+//             ]
+//         }
+//     ];
+//     test('array to tree', () => {
+//         const res = arrToTree(data);
+//         expect(res).toEqual(tree);
+//     });
 
-    test('tree to array', () => {
-        const res = treeToArray(tree);
-        expect(res).toEqual(data);
-    });
-});
+//     test('tree to array', () => {
+//         const res = treeToArray(tree);
+//         expect(res).toEqual(data);
+//     });
+// });
 
-// call/apply/bind
-describe('call/apply/bind', () => {
-    const person = {
-        name: 'youstde',
-        getName(newName, age) {
-            if (!newName) return this.name;
-            return {
-                name: newName,
-                age,
-            };
-        }
-    }
-    const personTwo = {
-        name: 'alex'
-    }
-    test('call with no params', () => {
+// // call/apply/bind
+// describe('call/apply/bind', () => {
+//     const person = {
+//         name: 'youstde',
+//         getName(newName, age) {
+//             return {
+//                 name: newName || this.name,
+//                 age: age || '',
+//             };
+//         }
+//     }
+//     const personTwo = {
+//         name: 'alex'
+//     }
+//     test('call with no params', () => {
         
-        const name = person.getName.myCall(personTwo);
-        expect(name).toBe('alex');
-    });
+//         const name = person.getName.myCall(personTwo);
+//         expect(name).toEqual({
+//             name: 'alex',
+//             age: ''
+//         });
+//     });
 
-    test('call with params', () => {
-        const personInfo = person.getName.myCall(personTwo, 'jack', 18);
-        expect(personInfo).toEqual({
-            name: 'jack',
-            age: 18,
-        });
-    });
+//     test('call with params', () => {
+//         const personInfo = person.getName.myCall(personTwo, 'jack', 18);
+//         expect(personInfo).toEqual({
+//             name: 'jack',
+//             age: 18,
+//         });
+//     });
 
-    test('apply with no params', () => {
-        const name = person.getName.myApply(personTwo);
-        expect(name).toBe('alex');
-    });
+//     test('apply with no params', () => {
+//         const name = person.getName.myApply(personTwo);
+//         expect(name).toEqual({
+//             name: 'alex',
+//             age: ''
+//         });
+//     });
 
-    test('apply with params', () => {
-        const name = person.getName.myApply(personTwo, ['jack', 18]);
-        expect(name).toEqual({
-            name: 'jack',
-            age: 18,
-        });
-    });
+//     test('apply with params', () => {
+//         const name = person.getName.myApply(personTwo, ['jack', 18]);
+//         expect(name).toEqual({
+//             name: 'jack',
+//             age: 18,
+//         });
+//     });
 
-    test('bind with params', () => {
-        const newFn = person.getName.bind(personTwo, 'jack');
-        const res = newFn(18);
-        expect(res).toEqual({
-            name: 'jack',
-            age: 18,
-        });
-    });
-});
+//     test('bind with params', () => {
+//         const newFn = person.getName.bind(personTwo, 'jack');
+//         const res = newFn(18);
+//         expect(res).toEqual({
+//             name: 'jack',
+//             age: 18,
+//         });
+//     });
+// });

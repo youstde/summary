@@ -34,6 +34,8 @@ getSnapshotBeforeUpdate的返回值作为componentDidUpdate方法第三个参数
 1.优化了这一点，保证了生产者和消费者之间的数据一致性
 #### Redux
 > Redux是一个状态容器
+> Redux 发布订阅的实现方式，以store为数据中心，使用 dispatch 触发从而修改数据，使用 subscribe 订阅数据。dispatch 的时候会通知所有的 subscribe 函数
+![redux 模拟实现](./redux.js)
 
 1.`什么是状态容器`-存放公共数据的仓库
 例子：假如把项目中的所有组件拉到一个钉钉群里，那Redux充当了这个群里的`群文件`这个角色
@@ -60,14 +62,35 @@ getSnapshotBeforeUpdate的返回值作为componentDidUpdate方法第三个参数
 > 一套强大的工具箱，重装战舰那些预制的能力这个工具箱里几乎都有，开发者可以灵活的选择用哪些能力，而不是全部都装上
 
 #### 为什么会引入React-Hooks
-1. 告别难以理解的Class，主要是this和生命周期
-2. 相关的业务逻辑在类组件里是分散在各个生命周期中，而一个生命周期中却糅杂着各种不相关的逻辑，逻辑和生命周期耦合在一起
+1. 让函数组件也能够做类组件的事，可以处理一些副作用，能拿 ref
+2. 告别难以理解的Class，主要是this和生命周期
+3. 相关的业务逻辑在类组件里是分散在各个生命周期中，而一个生命周期中却糅杂着各种不相关的逻辑，逻辑和生命周期耦合在一起
     类组件中，我们更多的是面向生命周期去编写逻辑代码，和React理念相悖，应该关注的是数据的变化，当某个数据发声变化要做什么，就像之前那个很经典的公式UI = render(data);
-3. 使状态逻辑复用变得简单,过去复用逻辑更多的是靠HOC或者Render Props，他们在实现逻辑复用的同时也破坏者组件结构，最常 见的就是嵌套地狱
-4. 函数组件从设计思想角度来看更加契合React理念
+4. 使状态逻辑复用变得简单,过去复用逻辑更多的是靠HOC或者Render Props，他们在实现逻辑复用的同时也破坏者组件结构，最常 见的就是嵌套地狱
+5. 函数组件从设计思想角度来看更加契合React理念
 
 #### 理性看待Hooks
 1. Hooks暂时还没有补齐类组件的能力，比如getSnapshotBeforeUpdate、componentDidCatch,这些生命周期还是强依赖类组件
+
+#### React Hooks 是如何模拟生命周期的
+```js
+import { useEffect } from 'react';
+
+useEffect(() => {
+    console.log('mock:componentDidMount');
+    return () => {
+        console.log('mock:componentWillUnmount');
+    }
+}, []);
+
+useEffect(() => {
+    console.log('mock:componentDidUpdate');
+});
+
+useEffect(() => {
+    console.log('mock:componentWillReceiveProps');
+}, [props]);
+```
 
 ### VDOM
 #### React选用VDOM是为了更好的性能吗
@@ -81,6 +104,9 @@ getSnapshotBeforeUpdate的返回值作为componentDidUpdate方法第三个参数
 
 
 ### Diff
+react 的diff基于currentIndex 和lastIndex 进行同层比较，从新的 VDOM 的第一个节点开始，去寻找上升子序列（📢：这里找的并不是最长的上升子序列，只是从第 0 项开始找，也就是从第 0 个开始和 older VDOM 去对比，找到不相交的线，也就是最长公共子序列），因为最长的上升子序列不一定是从 0 开始的
+
+vue3.x 的diff是找的最长上升子序列
 #### 15版本
 1. 大部分情况下，相同类型的组件其DOM结构也相同
 * 如果类型相同则进一步对比，如果不同，则删除替换等操作
@@ -130,7 +156,7 @@ ReactDOM.createRoot：异步执行（看情况的，也有可能是同步执行�
 
 ### react18取消了Effect list，取而代之的是遍历整个fiber树
 在18版本之前，beginWork阶段是自顶向下深度优先遍历的，然后如果遇到叶子节点就会触发当前节点的completeWork，那completeWork自下向上回到跟节点，那既然回都回去了，不如把effect收集一下，从而让commit阶段坐享其成，直接拿completeWork阶段的成功用。然后就有了completeWork的EffectList
-但是在React18中取消了这个effectList数据结构，取而代之的是遍历整个fiber树，subtreeFlags辅助提升性能
+但是在React18中取消了这个effectList数据结构，取而代之的是在 commit 阶段遍历整个fiber树，subtreeFlags辅助提升性能（每个需要更新的节点都会打上 flag，然后向上反馈到父节点上，如果父节点的subtreeFlags === NoFlags 那就不用向下继续遍历了）
 
 ### redux
 1. 为什么需要redux
@@ -144,7 +170,26 @@ ReactDOM.createRoot：异步执行（看情况的，也有可能是同步执行�
 ### React18中的Automatic batching
 [](https://github.com/reactwg/react-18/discussions/21)
 
+### 为什么useState使用数组而不是对象
+- 解构赋值的问题：
+数组依次排序的，所以可以随便命名
+对象不行，而且要对应上
 
+### react Hooks为什么不能写在循环或者if语句中
+那么 React 怎么知道哪个 state 对应哪个 `useState`？
+答案是 React 靠的是 Hook 调用的顺序。
+只要 Hook 的调用顺序在多次渲染之间保持一致，React 就能正确地将内部 state 和对应的 Hook 进行关联。
+[Hook 规则](https://zh-hans.reactjs.org/docs/hooks-rules.html)
 
+### useEffect 和 useLayoutEffect 区别
+- 执行时机不同
+- useEffect 是异步的
+- useLayoutEffect 是同步的
 
+### useInsertionEffect
+useInsertionEffect 执行在 dom 更新之前，所以此时可以做一些dom处理，比如 CSS-IN-JS，从而减少不必要的重绘和重排
 
+### 为什么不建议用 index 作为 key
+1. 如果破坏了 index 顺序会造成不必要的渲染，比如逆序添加
+2. 数据错位
+[参考](https://www.cnblogs.com/yingzi1028/p/16647253.html)

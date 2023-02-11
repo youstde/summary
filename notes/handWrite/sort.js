@@ -45,16 +45,17 @@ function insertSort(arr) {
     return arr;
 }
 
+// 希尔排序（插入排序的优化版本）
+
+// 归并排序
+
 // 快速排序
 function fastSort(arr) {
 
 }
 
-// 测试用例
-const arr = [6, 2, 1, 7, 3, 9, 5, 8, 4];
-// 时间复杂度n平方
-console.log('1.冒泡排序:', bubbleSort(arr));
-console.log('2.选择排序:', selectSort(arr));
-console.log('3.插入排序:', insertSort(arr));
-
-// 时间复杂度log(n)
+module.exports = {
+    bubbleSort,
+    selectSort,
+    insertSort,
+}

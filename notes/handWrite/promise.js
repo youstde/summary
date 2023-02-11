@@ -93,8 +93,6 @@ function MyPromise(fn) {
     }
 
     this.finally = function(cb) {
-        const p = this.constructor;
-        console.log('p', p);
         return this.then(cb, cb);
     }
 
