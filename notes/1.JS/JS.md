@@ -102,3 +102,63 @@ var obj = {
 
 2. js 代码中保存了对 dom 的引用
 3. console.log dom 信息或者 js 中变量
+
+### promise 的 then 方法的第二个参数和 catch 的区别
+- then 方法的第二个参数捕获不到当前 then 方法的第一个参数中抛出的错误
+- catch 可以捕获前面 所有地方抛出的错误
+===> 所有的错误只会到 then 方法的第二个参数或者 catch 为止，不会再往下传递
+
+### isNaN 和 Number.isNaN 区别
+isNaN 会做隐式类型转换，会影响对 NaN 的判断
+Number.isNaN 不会对传入的值进行类型换行，NaN 判断更准确
+### Object.is() 与 == 和 === 区别
+- 相较于 ==
+`==` 会进行隐式类型转换，而Object.is() 不会
+- 相较于 === 
+Object.is() 在绝大多数情况下和 `===` 的效果是一样的，只是在 `+0` 和 `-0`，以及 NaN 的判断上相反.
+Object.is(+0, -0) => false
+Object.is(NaN, NaN) => true
+
+### 什么是 JS 的包装类型
+在 JS 中，基本数据类型是没有属性和方法的，但是为了操作便利，在调用基本数据类型的属性或者方法的时候，JS 会在后台隐式地将基本数据类型转为对象。
+- 在访问 'abc'.length 的时候，JS 会在后台将 'abc' => new String('abc')，然后再访问其 length 属性.
+- 也可以使用 Object('abc') 将其转为 包装类型
+- 通过 valueOf 将包装类型转为基本类型
+```js
+var a = 'abc';
+var b = Object(a); // String {"abc"}
+var c = b.valueOf(); // 'abc'
+```
+
+### map 、forEach 、reduce
+- 假设我们有一个数组，每个元素是一个人。你面前站了一排人。
+- foreach 就是你按顺序一个一个跟他们做点什么，具体做什么，随便:
+```js
+people.forEach(function (dude) {
+  dude.pickUpSoap();
+});
+```
+- map 就是你手里拿一个盒子（一个新的数组），一个一个叫他们把钱包扔进去。结束的时候你获得了一个新的数组，里面是大家的钱包，钱包的顺序和人的顺序一一对应。
+```js
+var wallets = people.map(function (dude) {
+  return dude.wallet;
+});
+```
+- reduce 就是你拿着钱包，一个一个数过去看里面有多少钱啊？每检查一个，你就和前面的总和加一起来。这样结束的时候你就知道大家总共有多少钱了。
+```js
+var totalMoney = wallets.reduce(function (countedMoney, wallet) {
+  return countedMoney + wallet.money;
+}, 0);
+```
+- 补充一个 filter 的：
+你一个个钱包数过去的时候，里面钱少于 100 块的不要（留在原来的盒子里），多于 100 块的丢到一个新的盒子里。这样结束的时候你又有了一个新的数组，里面是所有钱多于 100 块的钱包：
+```js
+var fatWallets = wallets.filter(function (wallet) {
+  return wallet.money > 100;
+});
+```
+=>  map 和 filter 都是 immutable methods，会返回一个新数组，改变数据不会改变原数组，而 foreach 改变数据会影响到原数组.
+
+### 宏任务和微任务
+- 微任务的优先级要高于宏任务
+- 微任务中创建的微任务会在当前微任务中一起执行了，而微任务中创建的宏任务会加入到任务队列中等待执行
