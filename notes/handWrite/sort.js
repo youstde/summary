@@ -51,11 +51,85 @@ function insertSort(arr) {
 
 // 快速排序
 function fastSort(arr) {
-
+     partition(arr, 0, arr.length - 1);
+     return arr;
 }
+
+function partition(nums, start, end) {
+    if (start >= end) return;
+    const temp = nums[start];
+    let left = start;
+    let right = end;
+    while(left < right) {
+        while(left < right && nums[right] > temp) {
+            right--;
+        }
+        if (left < right) {
+            nums[left] = nums[right];
+            left++;
+        }
+        while(left < right && nums[left] < temp) {
+            left++;
+        }
+        if (left < right) {
+            nums[right] = nums[left];
+            right--;
+        }
+    }
+    nums[left] = temp;
+    partition(nums, start, left - 1);
+    partition(nums, left + 1, end);
+}
+
+// 归并排序
+function mergeSort(arr) {
+    const draft = [];
+    mergePartition(arr, 0, arr.length - 1, draft);
+    return arr;
+}
+
+function mergePartition(arr, start, end) {
+    const mid = parseInt(start + (end - start) / 2);
+    mergePartition(arr, start, mid - 1);
+    mergePartition(arr, mid, end);
+    merge(arr, start, mid, end);
+}
+
+function merge(nums, start, mid, end, draft) {
+    for(let i = start; i <= end; i++) {
+        draft[i] = nums[i];
+    }
+
+    let p1 = start;
+    let p2 = mid + 1;
+    for(let i = start; i <= end; i++) {
+        if (p1 > mid) {
+            nums[i] = draft[p2];
+            p2++;
+            continue;
+        }
+        if (p2 > end) {
+            nums[i] = draft[p1];
+            p1++;
+            continue;
+        }
+        if (draft[p1] < draft[p2]) {
+            nums[i] = draft[p1];
+            p1++;
+            continue;
+        }
+        if (draft[p1] >= draft[p2]) {
+            nums[i] = draft[p2];
+            p2++;
+        }
+    }
+}
+
+// 希尔排序
 
 module.exports = {
     bubbleSort,
     selectSort,
     insertSort,
+    fastSort,
 }

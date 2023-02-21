@@ -29,22 +29,6 @@ getDerivedStateFromProps有且只有一个用途：*使用props去派生/更新s
 可以同时获取到更新前的DOM和更新前后的state和props
 getSnapshotBeforeUpdate的返回值作为componentDidUpdate方法第三个参数传入
 
-### 数据管理
-#### context API
-老版本：
-1.代码不够优雅
-2.无法保证数据的生产者和消费者之间的及时同步
-新版本：
-1.优化了这一点，保证了生产者和消费者之间的数据一致性
-#### Redux
-> Redux是一个状态容器
-> Redux 发布订阅的实现方式，以store为数据中心，使用 dispatch 触发从而修改数据，使用 subscribe 订阅数据。dispatch 的时候会通知所有的 subscribe 函数
-![redux 模拟实现](./redux.js)
-
-1.`什么是状态容器`-存放公共数据的仓库
-例子：假如把项目中的所有组件拉到一个钉钉群里，那Redux充当了这个群里的`群文件`这个角色
-2.*在整个Redux的工作流程中，数据流向是严格单向的*
-
 ### React-Hooks
 理解Hooks之前先看一下类组件和函数组件
 #### 类组件
@@ -108,9 +92,46 @@ useEffect(() => {
 
 
 ### Diff
+- diff 策略
+1. 同层对比
+
+2. 相同类型的两个组件将会生成相似的树形结构；不同类型的两个组件将会生成不同的树形结构
+
+3. 对于同一层的子节点，可以通过唯一 ID 进行区分
+
+====> 
+1. tree diff
+基于策略一，React 对树的算法进行了简洁明了的优化，即对树进行分层比较，两棵树只会对同一层次的节点进行比较。
+
+2. component diff
+- 如果是同一类型的组件，按照原策略继续比较 virtual DOM tree。
+- 如果不是，则将该组件判断为 dirty component，从而替换整个组件下的所有子节点。
+
+- `所以，衍生出了一个优化点：`对于同一类型的组件，有可能其 Virtual DOM 没有任何变化，如果能够确切的知道这点那可以节省大量的 diff 运算时间，因此 React 允许用户通过 shouldComponentUpdate() 来判断该组件是否需要进行 diff。
+
+3. element diff
+当节点处于同一层级时，React diff 提供了三种节点操作，分别为：INSERT_MARKUP（插入）、MOVE_EXISTING（移动）和 REMOVE_NODE（删除）。
+
+![diff.png](./diff.png)
+
 react 的diff基于currentIndex 和lastIndex 进行同层比较，从新的 VDOM 的第一个节点开始，去寻找上升子序列（📢：这里找的并不是最长的上升子序列，只是从第 0 项开始找，也就是从第 0 个开始和 older VDOM 去对比，找到不相交的线，也就是最长公共子序列），因为最长的上升子序列不一定是从 0 开始的
 
 vue3.x 的diff是找的最长上升子序列
+
+===> 总结
+1. React 通过制定大胆的 diff 策略，将 O(n3) 复杂度的问题转换成 O(n) 复杂度的问题
+
+2. React 通过分层求异的策略，对 tree diff 进行算法优化
+
+3. React 通过相同类生成相似树形结构，不同类生成不同树形结构的策略，对 component diff 进行算法优化
+
+4. React 通过设置唯一 key的策略，对 element diff 进行算法优化
+
+===> 建议
+1. 在开发组件时，保持稳定的 DOM 结构会有助于性能的提升
+
+2. 在开发过程中，尽量减少类似将最后一个节点移动到列表首部的操作，当节点数量过大或更新操作过于频繁时，在一定程度上会影响 React 的渲染性能
+
 #### 15版本
 1. 大部分情况下，相同类型的组件其DOM结构也相同
 * 如果类型相同则进一步对比，如果不同，则删除替换等操作
@@ -167,15 +188,6 @@ ReactDOM.createRoot：异步执行（看情况的，也有可能是同步执行�
 - 在18版本之前，beginWork阶段是自顶向下深度优先遍历的，然后如果遇到叶子节点就会触发当前节点的completeWork，那completeWork自下向上回到跟节点，那既然回都回去了，不如把effect收集一下，从而让commit阶段坐享其成，直接拿completeWork阶段的成果用。然后就有了completeWork的EffectList
 
 - 但是在 React18 中取消了这个effectList数据结构，取而代之的是在 commit 阶段遍历整个fiber树，subtreeFlags辅助提升性能（每个需要更新的节点都会打上 flag，然后向上反馈到父节点上，如果父节点的subtreeFlags === NoFlags 那就不用向下继续遍历了）
-
-### redux
-1. 为什么需要redux
-前端复杂性很大程度上是由于大量的无序的操作导致的。
-比如一个复杂的项目中可能存在父子、子父、兄弟、跨层级或者是反向数据流等，整个项目的数据处理会变得异常复杂且难以追踪数据的变化。
-===> redux的目标是：1.让state的变得可预测；2.统一管理动作和状态
-
-2. applymiddleware源码中有执行每个middleware然后传入middleWareAPI，其中dispatch为什么用一个匿名函数包裹
-因为要保证被派发到每个中间件的中的dispatch都是同一个且是最新的
 
 ### React18中的Automatic batching
 [](https://github.com/reactwg/react-18/discussions/21)
@@ -285,3 +297,46 @@ function Page() {
     )
 }
 ```
+
+### useTransition 和 useDeferredValue
+- useTransition 和 useDeferredValue 其实是一个东西
+- useTransition 是将动作包装成低优先的任务
+```js
+  const [renderData, setRenderData] = React.useState(menuConfig[activeMenu])
+  const [isPending, startTransition] = React.useTransition();
+  const handleChangeTab = (activeMenu) => {
+    setActiveMenu(activeMenu)                // 立即更新
+    startTransition(() =&gt; {                  // 延迟更新
+      setRenderData(menuConfig[activeMenu])
+    })
+  }
+```
+- useDeferredValue 是包装的是值，它的变化所引起的界面变化的优先级最低
+```js
+ const [activeMenu, setActiveMenu] = React.useState('苏南');
+  const handleChangeTab = (activeMenuItem) => {
+    setActiveMenu(activeMenuItem)                                  // 立即更新
+  }
+  const activeMenuDefer = React.useDeferredValue(activeMenu);      // 状态延时更新
+```
+
+
+### 有 React Fiber，为什么不需要 Vue Fiber
+- 更新
+1. react 是从 root 节点开始进行深度遍历的，
+-- 老版本的 react 会一口气把 render 和 commit 都搞完。就会导致在这个更新过程中页面是没有响应的，用户的感知就是页面很卡
+-- 新版本的 react 17/18，引入了 fiber 架构，它允许 react 的 render 阶段是可以被打断的。这样，高优先级的任务就可以得到及时的响应
+
+2. vue 数据是通过 proxy 进行数据劫持，在 getter 里面进行依赖收集，然后在 setter 里面 触发监听者，然后更新视图
+-- vue 是可以做到精准更新的，这得益于 vue 使用的 proxy
+
+===> 所以
+react 的更新是比较粗粒度的，如果父组件有更新，子组件也会跟着重新渲染，所以为了去优化这个过程产生了 prueComponent、React.memo、shouldComponentUpdate 等方法。架构上就 重构成了 fiber
+
+===> 总结
+- react因为先天的不足——无法精确更新，所以需要react fiber把组件渲染工作切片；而vue基于数据劫持，更新粒度很小，没有这个压力；
+
+- react fiber这种数据结构使得节点可以回溯到其父节点，只要保留下中断的节点索引，就可以恢复之前的工作进度；
+
+===> vue 这种方案就真的比 react 好吗
+- 不见得，首先，vue 更多是得益于模版语法，实现静态编译，然后加之 proxy。但是有利有弊。模版语法就没有 react 的 jsx 来的灵活；其次，给每个组件分配一个“监视器”管理着视图的依赖收集和数据更新时的发布通知，这对性能同样是有消耗的

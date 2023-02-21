@@ -125,10 +125,10 @@ function traverse(root) {
 Function.prototype.myCall = function(context, ...args) {
     const curContext = context || window;
     const fn = Symbol(curContext);
-    context[fn] = this;
+    curContext[fn] = this;
 
-    const res = context[fn](...args);
-    delete context[fn];
+    const res = curContext[fn](...args);
+    delete curContext[fn];
     return res;
 }
 
@@ -138,8 +138,8 @@ Function.prototype.myApply = function(context, args=[]) {
     const curContext = context || window;
     const fn = Symbol(curContext);
     context[fn] = this;
-    const res = context[fn](...args);
-    delete context[fn];
+    const res = curContext[fn](...args);
+    delete curContext[fn];
     return res;
 }
 
@@ -148,6 +148,15 @@ Function.prototype.myBind = function(context, ...args) {
     return (...otherArgs) => {
         return this.apply(context, args.concat(otherArgs));
     }
+}
+
+// 打乱数组
+function shuffle(arr) {
+    for(let i = arr.length - 1; i >= 0; i--) {
+        const j = Math.floor(Math.random() * i);
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
 }
 
 
@@ -160,4 +169,5 @@ module.exports = {
     EventEmmiter,
     arrToTree,
     treeToArray,
+    shuffle,
 }
