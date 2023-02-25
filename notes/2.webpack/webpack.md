@@ -90,7 +90,7 @@ watch的缺陷：
 它会将 css 翻译成类似 module.exports = `${css}` 的JS代码，从而让 CSS 文件可以和 JS 文件一样作为资源。同时它还提供了 sourcemap, css-in-module 的能力
 
 ### React.lazy 配合 import 做懒加载
-打包后的产物中，这些异步加载的模块都会通过promise引入进来
+打包后的产物中，这些异步加载的模块都会通过 promise 引入进来
 ```js
 /******/ 		__webpack_require__.f = {};
 /******/ 		// This file contains only the entry chunk.

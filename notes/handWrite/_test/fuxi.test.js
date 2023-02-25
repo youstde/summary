@@ -1,5 +1,5 @@
 const fuxi = require('../fuxi.js');
-const { objectCreate, myInstanceOf, EventEmmiter, myNew, myNewTwo, arrToTree, treeToArray } = fuxi;
+const { objectCreate, myInstanceOf, EventEmitter, myNew, myNewTwo, arrToTree, treeToArray } = fuxi;
 
 // objectCreate
 describe('objectCreate', () => {
@@ -57,7 +57,7 @@ describe('new a object', () => {
 
 // EventEmmiter
 describe('eventEmmiter', () => {
-    const em = new EventEmmiter();
+    const em = new EventEmitter();
     const handlerFn = (eventParams) => (params) => {
         expect(params).toBe(eventParams);
     };

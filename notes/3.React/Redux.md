@@ -2,7 +2,9 @@
 ### Redux
 > Redux是一个状态容器
 > Redux 发布订阅的实现方式，以store为数据中心，使用 dispatch 触发从而修改数据，使用 subscribe 订阅数据。dispatch 的时候会通知所有的 subscribe 函数
-![redux 模拟实现](./redux.js)
+相关阅读：
+[Redux从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
+[redux 模拟实现](./redux.js)
 
 1. `什么是状态容器`-存放公共数据的仓库
 例子：假如把项目中的所有组件拉到一个钉钉群里，那Redux充当了这个群里的`群文件`这个角色

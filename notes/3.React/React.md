@@ -203,6 +203,44 @@ ReactDOM.createRoot：异步执行（看情况的，也有可能是同步执行�
 只要 Hook 的调用顺序在多次渲染之间保持一致，React 就能正确地将内部 state 和对应的 Hook 进行关联。
 [Hook 规则](https://zh-hans.reactjs.org/docs/hooks-rules.html)
 
+### useMemo 原理
+- mountMemo
+```js
+function mountMemo<T>(
+  nextCreate: () => T,
+  deps: Array<mixed> | void | null,
+): T {
+  const hook = mountWorkInProgressHook();
+  const nextDeps = deps === undefined ? null : deps;
+  const nextValue = nextCreate();
+  hook.memoizedState = [nextValue, nextDeps];
+  return nextValue;
+}
+```
+- updateMemo
+```js
+function updateMemo<T>(
+  nextCreate: () => T,
+  deps: Array<mixed> | void | null,
+): T {
+  const hook = updateWorkInProgressHook();
+  const nextDeps = deps === undefined ? null : deps;
+  const prevState = hook.memoizedState;
+  if (prevState !== null) {
+    // Assume these are defined. If they're not, areHookInputsEqual will warn.
+    if (nextDeps !== null) {
+      const prevDeps: Array<mixed> | null = prevState[1];
+      if (areHookInputsEqual(nextDeps, prevDeps)) {
+        return prevState[0];
+      }
+    }
+  }
+  const nextValue = nextCreate();
+  hook.memoizedState = [nextValue, nextDeps];
+  return nextValue;
+}
+```
+
 ### useEffect 和 useLayoutEffect 区别
 - 执行时机不同
 - useEffect 是异步的
@@ -340,3 +378,7 @@ react 的更新是比较粗粒度的，如果父组件有更新，子组件也�
 
 ===> vue 这种方案就真的比 react 好吗
 - 不见得，首先，vue 更多是得益于模版语法，实现静态编译，然后加之 proxy。但是有利有弊。模版语法就没有 react 的 jsx 来的灵活；其次，给每个组件分配一个“监视器”管理着视图的依赖收集和数据更新时的发布通知，这对性能同样是有消耗的
+
+
+### 如何看待 Svelte 这个前端框架
+[如何看待 Svelte 这个前端框架](https://www.zhihu.com/question/53150351)

@@ -159,6 +159,13 @@ var fatWallets = wallets.filter(function (wallet) {
 ```
 =>  map 和 filter 都是 immutable methods，会返回一个新数组，改变数据不会改变原数组，而 foreach 改变数据会影响到原数组.
 
+**补充一下：sort 会改变原数组**
+```js
+var arr = [1, 3, 6, 2, 5, 4];
+arr.sort((a, b) => a - b);
+console.log(arr); // [1, 2, 3, 4, 5, 6]
+```
+
 ### 宏任务和微任务
 - 微任务的优先级要高于宏任务
 - 微任务中创建的微任务会在当前微任务中一起执行了，而微任务中创建的宏任务会加入到任务队列中等待执行

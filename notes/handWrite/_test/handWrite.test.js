@@ -180,3 +180,19 @@ describe('call/apply/bind', () => {
         });
     });
 });
+
+// 大数相加
+describe('big sum', () => {
+    const { bigSum } = handWrite;
+    test('big sum 123 + 321', () => {
+        expect(bigSum('123', '321')).toBe('444');
+    });
+
+    test('big sum 999 + 1', () => {
+        expect(bigSum('999', '1')).toBe('1000');
+    });
+
+    test('big sum 1 + 999', () => {
+        expect(bigSum('1', '999')).toBe('1000');
+    });
+});
